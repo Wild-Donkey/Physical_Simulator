@@ -12,13 +12,13 @@ struct Image {
   unsigned Height, Width, Bytes, Size;
   double MetersPerPixel, Left, Down, Right, Up;
   inline void Resize() { Size = Height * Width * Bytes; }
-  inline void Rerange(Vector X) {
+  inline void Rerange(Flat_Vector X) {
     Left = X.x, Down = X.y;
     Right = Left + Width * MetersPerPixel;
     Up = Down + Height * MetersPerPixel;
   }
   inline void Rerange() { Rerange({ 0 - Width / 2 * MetersPerPixel, 0 - Height / 2 * MetersPerPixel }); }
-  inline Vector GetPixelPos(unsigned x, unsigned y) {
+  inline Flat_Vector GetPixelPos(unsigned x, unsigned y) {
     return { Left + (x + 0.5) * MetersPerPixel, Down + (y + 0.5) * MetersPerPixel };
   }
 };
@@ -33,7 +33,7 @@ struct Pixel {
   Color Col;
   pair<unsigned, unsigned> Pos;
   Pixel() {}
-  Pixel(Vector X) {
+  Pixel(Flat_Vector X) {
     if (X.x < Img.Left || X.x > Img.Right) { Pos = { 0xffffffff, 0xffffffff }; return; }
     if (X.y < Img.Down || X.y > Img.Up) { Pos = { 0xffffffff, 0xffffffff }; return; }
     Pos = { (unsigned)((X.x - Img.Left) / Img.MetersPerPixel + 0.5), (unsigned)((X.y - Img.Down) / Img.MetersPerPixel + 0.5) };
@@ -70,7 +70,7 @@ inline void PrintBMP() {
   freopen("log.txt", "a", stdout);
 }
 inline char Render(Point X, Color Col) {
-  Vector Pos({ X.x, X.y });
+  Flat_Vector Pos({ X.x, X.y });
   Pixel PointinImg(Pos);
   // printf("(%u, %u) %lf\n", PointinImg.Pos.first, PointinImg.Pos.second, Range);
   if (PointinImg.Pos.first >= 0xffffffff) return 0;

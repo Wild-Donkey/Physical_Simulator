@@ -17,13 +17,13 @@
 #include "renderer.h"
 #include "bmp.h"
 #define Wild_Donkey 0
-const double Lim(30), Step(0.0001), RenderStep((double)1 / 10);
+const double Lim(3), Step(0.0001), RenderStep((double)1 / 10);
 double Time(0), Elec(0), ElecList[3] = { 0.5, 1, 2 };
 unsigned Frame(1);
 Image Img;
 vector <MassPoint> Obj;
 vector <Point> RenderObj;
-vector <Vector> LastPos;
+vector <Flat_Vector> LastPos;
 using namespace std;
 inline unsigned RD() {
   unsigned intmp(0);
