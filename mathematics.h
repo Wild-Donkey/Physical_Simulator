@@ -2,6 +2,8 @@
 #define MY_MATHEMATICS 1
 const double Pi(acos(-1)), SqTwo(sqrt(2)), Eps(0.0000001);
 #include <cstdio>
+#include <iostream>
+using namespace std;
 inline unsigned Gcd(unsigned x, unsigned y) {
   unsigned TmG;
   while (y) TmG = x, x = y, y = TmG % y;
@@ -20,8 +22,11 @@ struct _Vector {
   inline void Print() { printf("(%lf, %lf, %lf)", x, y, z); }
   inline const char operator==(_Vector X) { return Eq(x, X.x) && Eq(y, X.y) && Eq(z, X.z); }
   inline void operator+=(_Vector X) { x += X.x, y += X.y, z += X.z; }
+  inline void operator-=(_Vector X) { x -= X.x, y -= X.y, z -= X.z; }
   inline void operator/=(double X) { x /= X, y /= X, z /= X; }
   inline void operator*=(double X) { x *= X, y *= X, z *= X; }
+  inline _Vector Merge_Mass(_Vector X) { return { x * X.x, y * X.y, z * X.z }; }
+  inline _Vector Merge_Max(_Vector X) { return { max(x,X.x), max(y, X.y), max(z, X.z) }; }
   inline double operator*(_Vector X) { return x * X.x + y * X.y + z * X.z; }
   inline void ReLen() { (*this) /= Len(); }
   inline void ReLen(double X) { (*this) *= X / Len(); }

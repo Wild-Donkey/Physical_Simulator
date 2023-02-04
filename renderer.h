@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
-#include "physics.h"
+// #include "physics.h"
 #include "geometry.h"
 #include "bmp.h"
 #include "color.h"
@@ -22,11 +22,14 @@ struct Image {
     return { Left + (x + 0.5) * MetersPerPixel, Down + (y + 0.5) * MetersPerPixel };
   }
 };
-extern const double Lim, Step, RenderStep;
+char Yes(0);
+extern const double Lim, RenderStep;
 const double TrackStay(6);
+const unsigned ReflectLim(3);
 extern double Time;
 extern unsigned Frame;
 extern vector <Point> RenderObj;
+extern vector <Item> ItemList;
 extern Image Img;
 Color ColorPanel[100], TmpCol;
 struct Pixel {
@@ -39,6 +42,33 @@ struct Pixel {
     Pos = { (unsigned)((X.x - Img.Left) / Img.MetersPerPixel + 0.5), (unsigned)((X.y - Img.Down) / Img.MetersPerPixel + 0.5) };
   }
 };
+struct Cam {
+  unsigned CWidth, CHeight;
+  double Dist;
+  Flat_Vector Center, Area, PxSiz, LfDw;
+  _Vector CX, CY, DstVet;
+  Plane CamMap;
+  inline Cam() { Center = { 0,0 }, CWidth = 1920, CHeight = 1080, Dist = Area.x = 0.5; }
+  inline Cam(Plane X, _Vector Y) { CamMap = X, CX = Y, Center = { 0,0 }, CWidth = 1920, CHeight = 1080, Dist = Area.x = 0.5; }
+  // inline Cam(Plane X) { CamMap = X, Center = { 0,0 }, CWidth = 1920, CHeight = 1080, Dist = Area.x = 0.50; }
+  inline void Init() {
+    Area.y = (Area.x * CHeight) / CWidth;
+    LfDw = Center - (Area / 2);
+    CY = (CX ^ CamMap.Vet_Vec), CY.ReLen();
+    PxSiz = { Area.x / CWidth, Area.y / CHeight };
+    DstVet = CamMap.Vet_Vec * Dist;
+    printf("X, Y"), CX.Print(), CY.Print(), putchar(0x0A);
+    printf("Front"), DstVet.Print(), putchar(0x0A);
+    printf("PxSiz"), PxSiz.Print(), putchar(0x0A);
+  }
+  inline Line GetRay(unsigned X, unsigned Y) {
+    Flat_Vector PxPos(LfDw + Flat_Vector{ PxSiz.x * X, PxSiz.y * Y });
+    _Vector Rt(DstVet + CX * PxPos.x + CY * PxPos.y);
+    Rt.ReLen();
+    return { Rt, CamMap.Origin };
+  }
+};
+extern vector<Cam> CamList;
 struct Screen {
   Color Content[1080][1920];
   /*
@@ -89,7 +119,39 @@ inline char Render(Point X, Color Col) {
   }
   return 1;
 }
-inline char Render(Point x) { return Render(x, { 255,255,255 }); }
+inline char Render(Point x) { return Render(x, Color(255)); }
+inline _Vector Trace(Line X, unsigned Depth) {
+  // printf("Trace"), X.Vet_Vec.Print(), putchar(0x0A);
+  vector<pair<double, Item*> > Crossed;
+  double Dist;
+  for (unsigned i(ItemList.size() - 1); ~i; --i)
+    if (ItemList[i].Judge(&X, &Dist)) Crossed.push_back({ Dist, &ItemList[i] });
+  if (!(Crossed.size())) return _Vector(0);
+  sort(Crossed.begin(), Crossed.end());
+  Item* Cur(Crossed[0].second);
+  Dist = Crossed[0].first;
+  // printf("%u Bri", Cur->Type), Cur->Brightness.Print(), putchar(0x0A);
+  // printf("Done %u %u\n", Cur, &(Cur->Brightness));
+  // printf("%lf dis FAQ %lf\n", Dist, Cur->Brightness.x);
+  // if (X.Vet_Vec.z < -0.25) printf("Done"), ItemList[0].Brightness.Print(), putchar(0x0A);
+  if (Cur->Reflectivity.LenS() <= Eps) return (Yes ? _Vector({ 0, 0, 0 }) : Cur->Brightness);
+  // printf("FAQ\n");
+  Line Law;
+  if (Depth < ReflectLim)
+    return Cur->Brightness.Merge_Max(Cur->Reflectivity.Merge_Mass(Trace(Cur->Out(&X, Dist), Depth + 1)));
+  return Cur->Brightness;
+}
+inline void Render(Cam* X) {
+  printf("Frame %u\n", Frame);
+  PxlList.Img_Init();
+  for (unsigned j(X->CHeight); j; --j) {
+    for (unsigned k(1); k <= X->CWidth; ++k) {
+      // printf("%u %u\n", j, k);
+      PxlList.Content[X->CHeight - j + 1][k] = Color(Trace(X->GetRay(k, j), 1));
+    }
+  }
+  PrintBMP();
+}
 inline void Render() {
   printf("Frame %u\n", Frame);
   PxlList.Img_Init();

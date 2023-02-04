@@ -55,11 +55,11 @@ signed main() {
   // Obj[3].Q = 1, Obj[3].Mass = 1, Obj[3].V = { 3, 0 }, Obj[3].Pos = { -9, 0 };
   // Obj[4].Q = 1, Obj[4].Mass = 1, Obj[4].V = { 0.2, 0 }, Obj[4].Pos = { -9, 0 };
   for (auto i : Obj) LastPos.push_back(i.Pos);
-  ColorPanel[0] = { 255,0,255 };
-  ColorPanel[1] = { 255,255,0 };
-  ColorPanel[2] = { 0,255,255 };
-  ColorPanel[3] = { 255,0,0 };
-  ColorPanel[4] = { 0,0,255 };
+  ColorPanel[0] = Color(255, 0, 255);
+  ColorPanel[1] = Color(255, 255, 0);
+  ColorPanel[2] = Color(0, 255, 255);
+  ColorPanel[3] = Color(255, 0, 0);
+  ColorPanel[4] = Color(0, 0, 255);
   /*
   Three body problem
   Obj.push_back(MassPoint());
